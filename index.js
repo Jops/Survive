@@ -87,10 +87,12 @@ Player.prototype = {
         return true;
     },
     hide: function(dir) {
+        if(this.hidden) return false;
         var block = checkGridOnDirAndDist(this.position, dir, 1);
         if(block.type != 'building') {
             return false;
         }
+        this.hidden = true;
         this.position.x = block.position.x;
         this.position.y = block.position.y;
         return true;
@@ -112,6 +114,7 @@ Player.prototype = {
     carry: function() {
         this.item = takeGridItem(this.position);
     },
+    hidden: false,
     item: 0,
     active: true
 };
@@ -251,7 +254,7 @@ function playerLook(pos, dir) {
     var zombie = lookForZombies(pos, dir);
     var blocks = checkPlayerLook(pos, dir);
     return {
-        zombies: zombie,
+        zombie: zombie,
         grid: blocks
     };
 }
