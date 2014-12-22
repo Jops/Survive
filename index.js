@@ -68,14 +68,18 @@ function play(player, command) {
             break;
         case 'LOOK':
         case 'WATCH':
-            var surroundings = player.watch();
-            gameStatuses.push(surroundings.zombie ? 'You don\'t see any zombies.' : 'ZOMBIES!!');
+            var surroundings = player.look(command.params[0]);
             gameStatuses.push(
+                surroundings.zombie ? 'You don\'t see any zombies.' : 'ZOMBIES!!',
                 surrendings.grid.length == 2 && surrendings.grid[1].type !== 'building' ? 'You only see streets ahead.' : 'You can see a building ' + surrendings.grid.length + ' blocks away.'
             );
             break;
         case 'STATUS':
-            gameStatuses.push(player.status().position.x, player.status().position.y, player.status().location);
+            var status = player.status();
+            gameStatuses.push(
+                'You are standing on block [' + status.position.x + ', ' + status.position.y + '].',
+                'You are in a ' + status.location + '.'
+            );
             break;
         default:
             statements_def
