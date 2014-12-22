@@ -21,6 +21,12 @@ io.on('connection', function(socket) {
 
     socket.on('disconnect', function() {
         console.log('user disconnected');
+        for( var i = 0; i < players.length; i++ ) {
+            if(players[i].socket === socket) {
+                players.splice(i,1);
+                i--;
+            }
+        }
     });
 
     socket.on('chat message', handleMessage.bind(this, socket));
@@ -44,7 +50,7 @@ http.listen(3000, function() {
 });
 
 function processMessage(msg) {
-    var gameStatus = [];//play(msg);
+    var gameStatus = play(msg);
 
     msg = '<span class="player-command">' + msg + '</span>';
     msg += '<ul class="game-status">';
@@ -60,6 +66,8 @@ function processMessage(msg) {
 // game
 
 var startPosition;
+var zombieCount = 10;
+var zombieMoveTime = 3000;
 
 var Player = function(client_socket) {
     this.socket = client_socket;
@@ -68,50 +76,65 @@ Player.prototype = {
     socket: null,
     position: startPosition,
     move: function(dir) {
-        switch(dir) {
-            case 'N': {
-                
-            }
-            break;
-            case 'E': {
-                
-            }
-            break;
-            case 'S': {
-                
-            }
-            break;
-            case 'W': {
-
-            }
-            break;
+        // check can move
+        // return simply true/false
+        var block = checkGridOnDirAndDist(this.position, dir, 1);
+        if(block.type == 'building') {
+            return false;
         }
+        this.position.x = block.position.x;
+        this.position.y = block.position.y;
+        return true;
     },
     hide: function(dir) {
-        checkGrid(dir+position);
+        var block = checkGridOnDirAndDist(this.position, dir, 1);
+        if(block.type != 'building') {
+            return false;
+        }
+        this.position.x = block.position.x;
+        this.position.y = block.position.y;
+        return true;
     },
-    hidden: false,
-    item: 0
+    look: function(dir) {
+        return playerLook(this.position, dir);
+    },
+    status: function() {
+        return {
+            position: this.position,
+            location: checkGrid(this.position).type,
+            item: this.item,
+            active: this.active
+        };
+    },
+    inventory: function(dir) {
+        return this.item;
+    },
+    carry: function() {
+        this.item = takeGridItem(this.position);
+    },
+    item: 0,
+    active: true
 };
 var Zombie = function() {
-    this.init();
+    this.position.x = Math.floor(Math.random() * 5);
+    this.position.x = Math.floor((Math.random() * 12) + 2);
 };
 Zombie.prototype = {
-    init: function(x, y) {
-
-    },
     position: {x: null, y: null},
-    target: {x: null, y: null}
+    target: {x: null, y: null},
+    active: true
 };
-players = [];
+var players = [];
 var zombies = [];
 
 var Building = function() {};
 Building.prototype = {
+    type: 'building',
     item: 0
 };
 var Street = function() {};
 Street.prototype = {
+    type: 'street',
     exit: false
 };
 
@@ -137,17 +160,18 @@ var mainLoopInterval;
 
 function main() {
     // main loop
-    mainLoopInterval = setInterval(mainUpdate.bind(this), 50);
+    mainLoopInterval = setInterval(zombieMove.bind(this), zombieMoveTime);
 
     // create city
     buildCity();
+
+    // spawn zombies
+    spawnZombies();
 }
 
 function buildCity() {
-    for( var y = 0; y < cityGrid.length; y++ )
-    {
-        for( var x = 0; x < cityGrid[y].length; x++ )
-        {
+    for( var y = 0; y < cityGrid.length; y++ ) {
+        for( var x = 0; x < cityGrid[y].length; x++ ) {
             var block = null;
             switch(cityGrid[y][x]) {
                 case 'b': block = new Building();
@@ -170,30 +194,109 @@ function buildCity() {
     }
 }
 
-function checkGrid(x, y) {
-    return cityGrid[y][x];
+function spawnZombies() {
+    for( var i = 0; i < zombieCount; i++ ) {
+        zombies.push(new Zombie());
+    }
 }
 
-function checkGridDir(x, y, dir, dist) {
+function checkGrid(pos) {
+    return cityGrid[pos.y][pos.x];
+}
+
+function checkGridOnDirAndDist(pos, dir, dist) {
+    posOnDirAndDist(pos);
+    return checkGrid(pos);
+}
+
+function posOnDirAndDist(pos, dir, dist) {
+    var disp;
     switch(dir) {
         case 'N': {
-            --y;
+            disp = -1*dist;
+            pos.y += disp;
         }
         break;
         case 'E': {
-            ++x;
+            disp = dist;
+            pos.x += disp;
         }
         break;
         case 'S': {
-            ++y;
+            disp = dist;
+            pos.y += disp;
         }
         break;
         case 'W': {
-            --x;
+            disp = -1*dist;
+            pos.x += disp;
         }
         break;
     }
-    return cityGrid[y][x];
+    return pos;
+}
+
+function checkGridItem(pos) {
+    return checkGrid(pos).item;
+}
+
+function takeGridItem(pos) {
+    var block = checkGrid(pos);
+    var item = block.item;
+    block.item = 0;
+    return item;
+}
+
+function playerLook(pos, dir) {
+    var zombie = lookForZombies(pos, dir);
+    var blocks = checkPlayerLook(pos, dir);
+    return {
+        zombies: zombie,
+        grid: blocks
+    };
+}
+
+function lookForZombies(pos, dir) {
+    // return the first zombie spotted at position
+    posOnDirAndDist(pos, dir, 1);
+    if(checkForZombieAt(pos)) {
+        return true;
+    } else {
+        posOnDirAndDist(pos, dir, 1);
+        if(checkForZombieAt(pos)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkForZombieAt(pos) {
+    for( var i = 0; i < zombies.length; i++ ) {
+        if( zombies[i].position.x == pos.x &&
+            zombies[i].position.y == pos.y ) {
+            return true;
+        }
+    }
+}
+
+function checkPlayerLook(pos, dir) {
+    // check in one direction only 2 blocks
+    // return first hit if building
+    var block = checkGridOnDirAndDist(pos, dir, 1);
+    var blocks = [block];
+    if(block.type == 'building') {
+        return blocks;
+    }
+    block = checkGridOnDirAndDist(pos, dir, 1);
+    this.blocks.push(block);
+    return blocks;
+}
+
+function noiseRegister(pos) {
+    // tell all zombies to change target
+    for( var i = 0; i < zombies.length; i++ ) {
+        zombies[i].target = pos;
+    }
 }
 
 function checkZombieLook(pos) {
@@ -201,16 +304,7 @@ function checkZombieLook(pos) {
     // return first hit
 }
 
-function checkPlayerLook(pos, dir) {
-    // check in one direction only 2 blocks
-    // return first hit
-}
-
-function noiseRegister(pos) {
-    // tell all zombies to change target
-}
-
-function mainUpdate() {
+function zombieMove() {
 
 }
 
