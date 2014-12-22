@@ -17,29 +17,34 @@ app.use(
 io.on('connection', function(socket) {
     console.log('a user connected');
 
+    players.push(new Player(socket));
+
     socket.on('disconnect', function() {
         console.log('user disconnected');
     });
-    socket.on('chat message', function(msg) {
-        console.log('message: ' + msg);
-        msg = processMessage(
-            sanitizeHtml(
-                msg,
-                {
-                    allowedTags: []
-                }
-            )
-        );
-        io.emit('chat message', msg);
-    });
+
+    socket.on('chat message', handleMessage.bind(this, socket));
 });
+
+function handleMessage(socket, msg) {
+    console.log('message: ' + msg);
+    msg = processMessage(
+        sanitizeHtml(
+            msg,
+            {
+                allowedTags: []
+            }
+        )
+    );
+    io.emit('chat message', msg);
+}
 
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
 
 function processMessage(msg) {
-    var gameStatus = play(msg);
+    var gameStatus = [];//play(msg);
 
     msg = '<span class="player-command">' + msg + '</span>';
     msg += '<ul class="game-status">';
@@ -56,8 +61,11 @@ function processMessage(msg) {
 
 var startPosition;
 
-var Player = function() {};
+var Player = function(client_socket) {
+    this.socket = client_socket;
+};
 Player.prototype = {
+    socket: null,
     position: startPosition,
     move: function(dir) {
         switch(dir) {
@@ -95,8 +103,7 @@ Zombie.prototype = {
     position: {x: null, y: null},
     target: {x: null, y: null}
 };
-
-var players = [];
+players = [];
 var zombies = [];
 
 var Building = function() {};
@@ -130,7 +137,7 @@ var mainLoopInterval;
 
 function main() {
     // main loop
-    mainLoopInterval = setInterval(mainUpdate(), 50);
+    mainLoopInterval = setInterval(mainUpdate.bind(this), 50);
 
     // create city
     buildCity();
