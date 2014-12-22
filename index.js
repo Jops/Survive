@@ -90,7 +90,7 @@ function parseCommand(command) {
 
     command = command.replace(/\s/gi, '');
 
-    action = /[a-z]*/i.exec(command).toUpperCase();
+    action = /[a-z]*/i.exec(command)[0].toUpperCase();
 
     params = /\(([^)]+)\)/.exec(command);
     params = params[1].split(',');
@@ -258,7 +258,7 @@ function checkGrid(pos) {
 }
 
 function checkGridOnDirAndDist(pos, dir, dist) {
-    posOnDirAndDist(pos);
+    posOnDirAndDist(pos, dir, dist);
     return checkGrid(pos);
 }
 
