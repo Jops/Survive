@@ -131,7 +131,9 @@ Player.prototype = {
     move: function(dir) {
         // check can move
         // return simply true/false
-        var block = checkGridOnDirAndDist(this.position, dir, 1);
+        var block = checkGridOnDirAndDist(  {x: this.position.x, y: this.position.y},
+                                            dir,
+                                            1);
         if(block.type == 'building') {
             return false;
         }
@@ -141,7 +143,9 @@ Player.prototype = {
     },
     hide: function(dir) {
         if(this.hidden) return false;
-        var block = checkGridOnDirAndDist(this.position, dir, 1);
+        var block = checkGridOnDirAndDist(  {x: this.position.x, y: this.position.y},
+                                            dir,
+                                            1);
         if(block.type != 'building') {
             return false;
         }
@@ -151,7 +155,7 @@ Player.prototype = {
         return true;
     },
     look: function(dir) {
-        return playerLook(this.position, dir);
+        return playerLook({x: this.position.x, y: this.position.y}, dir);
     },
     status: function() {
         return {
@@ -165,7 +169,7 @@ Player.prototype = {
         return this.item;
     },
     carry: function() {
-        this.item = takeGridItem(this.position);
+        this.item = takeGridItem({x: this.position.x, y: this.position.y});
     },
     hidden: false,
     item: 0,
