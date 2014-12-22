@@ -17,7 +17,8 @@ app.use(
 io.on('connection', function(socket) {
     console.log('a user connected');
 
-    players.push(new Player(socket));
+    var player = new Player(socket);
+    players.push(player);
 
     socket.on('disconnect', function() {
         console.log('user disconnected');
@@ -29,29 +30,78 @@ io.on('connection', function(socket) {
         }
     });
 
-    socket.on('chat message', handleMessage.bind(this, socket));
+    socket.on('chat message', handleMessage.bind(this, player));
 });
 
-function handleMessage(socket, msg) {
+function handleMessage(player, msg) {
     console.log('message: ' + msg);
-    msg = processMessage(
-        sanitizeHtml(
-            msg,
-            {
-                allowedTags: []
-            }
-        )
-    );
-    io.emit('chat message', msg);
+    msg = sanitizeHtml(msg, { allowedTags: [] });
+
+    var gameStatus = play(player, msg);
+
+    io.emit('chat message', outputStatus(gameStatus, msg));
 }
 
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
 
-function processMessage(msg) {
-    var gameStatus = play(msg);
+function play(player, command) {
+    var gameStatuses = [];
+    command = parseCommand(command);
 
+    if(!player.active)
+        return ['You didn\'t move fast enough. You were eaten by a zombie.'];
+
+    switch(command.action){
+        case 'MOVE':
+            var moved = player.move(command.params[0]);
+            gameStatuses.push(moved ? 'You moved succesfully.' : 'There doesn\'t seem to be a street in that direction, you can\'t move there.');
+            break;
+        case 'HIDE':
+            if(player.hidden) {
+                gameStatuses.push('You are already hidden.');
+            } else {
+                var hidden = player.hide(command.params[0]);
+                gameStatuses.push(hidden ? 'You are now hidden inside a building.' : 'You cannot hide in that direction.');
+            }
+            break;
+        case 'LOOK':
+        case 'WATCH':
+            var surroundings = player.watch();
+            gameStatuses.push(surroundings.zombie ? 'You don\'t see any zombies.' : 'ZOMBIES!!');
+            gameStatuses.push(
+                surrendings.grid.length == 2 && surrendings.grid[1].type !== 'building' ? 'You only see streets ahead.' : 'You can see a building ' + surrendings.grid.length + ' blocks away.'
+            );
+            break;
+        case 'STATUS':
+            break;
+        default:
+            statements_def
+            break;
+    }
+
+    return gameStatuses;
+}
+
+function parseCommand(command) {
+    var action = '',
+        params = [];
+
+    command = command.replace(/\s/gi, '');
+
+    action = /[a-z]*/i.exec(command)[0].toUpperCase();
+
+    params = /\(([^)]+)\)/.exec(command);
+    params = params[1].split(',');
+
+    return {
+        action: action,
+        params: params
+    };
+}
+
+function outputStatus(gameStatus, msg) {
     msg = '<span class="player-command">' + msg + '</span>';
     msg += '<ul class="game-status">';
 
@@ -208,7 +258,7 @@ function checkGrid(pos) {
 }
 
 function checkGridOnDirAndDist(pos, dir, dist) {
-    posOnDirAndDist(pos);
+    posOnDirAndDist(pos, dir, dist);
     return checkGrid(pos);
 }
 
