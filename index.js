@@ -121,13 +121,16 @@ var zombieMoveTime = 3000;
 
 var Player = function(client_socket) {
     this.socket = client_socket;
+    this.position.x = startPosition.x;
+    this.position.y = startPosition.y;
 };
 Player.prototype = {
     socket: null,
-    position: startPosition,
+    position: {x: null, y: null},
     move: function(dir) {
         // check can move
         // return simply true/false
+        console.log(this.position);
         var block = checkGridOnDirAndDist(this.position, dir, 1);
         if(block.type == 'building') {
             return false;
@@ -180,13 +183,21 @@ Zombie.prototype = {
 var players = [];
 var zombies = [];
 
-var Building = function() {};
+var Building = function(x, y) {
+    this.position.x = x;
+    this.position.y = y;
+};
 Building.prototype = {
+    position: {x: null, y: null},
     type: 'building',
     item: 0
 };
-var Street = function() {};
+var Street = function(x, y) {
+    this.position.x = x;
+    this.position.y = y;
+};
 Street.prototype = {
+    position: {x: null, y: null},
     type: 'street',
     exit: false
 };
@@ -227,17 +238,17 @@ function buildCity() {
         for( var x = 0; x < cityGrid[y].length; x++ ) {
             var block = null;
             switch(cityGrid[y][x]) {
-                case 'b': block = new Building();
+                case 'b': block = new Building(x, y);
                 break;
                 case 'o': {
-                    block = new Street();
+                    block = new Street(x, y);
                     startPosition = {x: x, y: y};
                 }
                 break;
-                case 's': block = new Street();
+                case 's': block = new Street(x, y);
                 break;
                 case 'e': {
-                    block = new Street();
+                    block = new Street(x, y);
                     block.exit = true;
                 }
                 break;
