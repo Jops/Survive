@@ -5,7 +5,7 @@
 }
 body {
     font: 13px Helvetica, Arial;
-    background-color: #333;
+    background: url('/public/img/zombie.png') #333 no-repeat fixed right 10px bottom 60px;
 }
 form {
     background: #000;
