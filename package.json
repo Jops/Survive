@@ -4,6 +4,7 @@
   "description": "my first socket.io app",
   "dependencies": {
     "express": "^4.10.2",
-    "socket.io": "^1.2.1"
+    "socket.io": "^1.2.1",
+    "sanitize-html": "^1.4.3"
   }
 }
