@@ -75,6 +75,7 @@ function play(player, command) {
             );
             break;
         case 'STATUS':
+            gameStatuses.push(player.status().position.x, player.status().position.y, player.status().location);
             break;
         default:
             statements_def
@@ -93,7 +94,7 @@ function parseCommand(command) {
     action = /[a-z]*/i.exec(command)[0].toUpperCase();
 
     params = /\(([^)]+)\)/.exec(command);
-    params = params[1].split(',');
+    params = params ? params[1].split(',') : null;
 
     return {
         action: action,
@@ -130,7 +131,6 @@ Player.prototype = {
     move: function(dir) {
         // check can move
         // return simply true/false
-        console.log(this.position);
         var block = checkGridOnDirAndDist(this.position, dir, 1);
         if(block.type == 'building') {
             return false;
