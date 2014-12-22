@@ -22,18 +22,43 @@ form input {
 }
 form button {
     width: 9%;
-    background: rgb(130, 224, 255);
+    background: #114000;
+    color: #ddd;
     border: none;
     padding: 10px;
+}
+form button:hover {
+    color: #fff;
+    background-color: #1e7200;
+    cursor: pointer;
+}
+form label {
+    color: #aaa;
+    font-style: italic;
+    padding: 5px;
 }
 #messages {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
-#messages li {
+#messages > li {
     padding: 5px 10px;
+    background-color: #666;
 }
-#messages li:nth-child(odd) {
-    background: #eee;
+#messages > li:nth-child(odd) {
+    background: #444;
+}
+.player-command {
+    color: #0be400;
+    font-family: 'courier';
+}
+.player-command:before {
+    content: '> ';
+    font-size: .6rem;
+}
+.game-status {
+    color: #aaa;
+    padding-left: 15px;
+    list-style-type: none;
 }
