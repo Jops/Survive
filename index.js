@@ -1,9 +1,9 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var path = require('path');
-var express = require('express');
-var sanitizeHtml = require('sanitize-html');
+var app = require('express')(),
+    http = require('http').Server(app),
+    io = require('socket.io')(http),
+    path = require('path'),
+    express = require('express'),
+    sanitizeHtml = require('sanitize-html');
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -82,7 +82,7 @@ function play(player, command) {
             );
             break;
         default:
-            statements_def
+            gameStatuses.push('Unknown command. Type \'help\' for a list of available commands.');
             break;
     }
 
