@@ -1,9 +1,9 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var path = require('path');
-var express = require('express');
-var sanitizeHtml = require('sanitize-html');
+var app = require('express')(),
+    http = require('http').Server(app),
+    io = require('socket.io')(http),
+    path = require('path'),
+    express = require('express'),
+    sanitizeHtml = require('sanitize-html');
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -31,6 +31,8 @@ io.on('connection', function(socket) {
     });
 
     socket.on('chat message', handleMessage.bind(this, player));
+
+    socket.on('last command', getLastCommand.bind(this, player));
 });
 
 function handleMessage(player, msg) {
@@ -46,8 +48,15 @@ http.listen(3000, function() {
     console.log('listening on *:3000');
 });
 
+function getLastCommand(player) {
+    io.emit('last command', player.lastCommand);
+}
+
 function play(player, command) {
     var gameStatuses = [];
+
+    player.lastCommand = command;
+
     command = parseCommand(command);
 
     if(!player.active)
@@ -82,7 +91,7 @@ function play(player, command) {
             );
             break;
         default:
-            statements_def
+            gameStatuses.push('Unknown command. Type \'help\' for a list of available commands.');
             break;
     }
 
@@ -132,6 +141,7 @@ var Player = function(client_socket) {
 Player.prototype = {
     socket: null,
     position: {x: null, y: null},
+    lastCommand: null,
     move: function(dir) {
         // check can move
         // return simply true/false

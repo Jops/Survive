@@ -40,6 +40,7 @@ form label {
 #messages {
     list-style-type: none;
     margin: 0;
+    margin-bottom: 55px;
     padding: 0;
 }
 #messages > li {
@@ -59,6 +60,9 @@ form label {
 }
 .game-status {
     color: #aaa;
-    padding-left: 15px;
+    padding-left: 25px;
     list-style-type: none;
+}
+.game-status-welcome li {
+    font-style: italic;
 }
