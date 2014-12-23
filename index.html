@@ -8,15 +8,13 @@
 
 <body>
     <ul id="messages">
-        <!-- DEFAULT OUPUT
         <li>
-            <span class='player-command'>command</span>
-            <ul class="game-status">
-                <li>WEST: toto</li>
-                <li>NORTH: tata</li>
-                <li>WEST: toto</li>
+            <ul class="game-status game-status-welcome">
+                <li>You are stranded in a city crawling with zombies.</li>
+                <li>Try to survive and reach the designated escape points where the army will help you.</li>
+                <li>You can hide and find items in the buildings. Be careful, while you think about what to do next, the zombies will keep looking for fresh meat!</li>
             </ul>
-        </li> -->
+        </li>
     </ul>
 
     <form action="">
@@ -41,6 +39,8 @@
         });
     socket.on('chat message', function(msg) {
         $('#messages').append($('<li>').html(msg));
+        window.scrollTo(0,document.body.scrollHeight);
+
     });
     socket.on('last command', function(command) {
         if(command)
