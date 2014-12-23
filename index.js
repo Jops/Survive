@@ -79,8 +79,8 @@ function play(player, command) {
         case 'WATCH':
             var surroundings = player.look(command.params[0]);
             gameStatuses.push(
-                surroundings.zombie ? 'You don\'t see any zombies.' : 'ZOMBIES!!',
-                surrendings.grid.length == 2 && surrendings.grid[1].type !== 'building' ? 'You only see streets ahead.' : 'You can see a building ' + surrendings.grid.length + ' blocks away.'
+                surroundings.zombie ? 'ZOMBIES!!' : 'You don\'t see any zombies.',
+                surroundings.grid.length == 2 && surroundings.grid[1].type !== 'building' ? 'You only see streets ahead.' : 'You can see a building ' + surroundings.grid.length + ' blocks away.'
             );
             break;
         case 'STATUS':
@@ -169,7 +169,7 @@ Player.prototype = {
         return true;
     },
     look: function(dir) {
-        return playerLook({x: this.position.x, y: this.position.y}, dir);
+        return playerLook(this.position.x, this.position.y, dir);
     },
     status: function() {
         return {
@@ -327,17 +327,18 @@ function takeGridItem(pos) {
     return item;
 }
 
-function playerLook(pos, dir) {
-    var zombie = lookForZombies(pos, dir);
-    var blocks = checkPlayerLook(pos, dir);
+function playerLook(posX, posY, dir) {
+    var zombie = lookForZombies(posX, posY, dir);
+    var blocks = checkPlayerLook(posX, posY, dir);
     return {
         zombie: zombie,
         grid: blocks
     };
 }
 
-function lookForZombies(pos, dir) {
+function lookForZombies(posX, posY, dir) {
     // return the first zombie spotted at position
+    var pos = {x: posX, y: posY};
     posOnDirAndDist(pos, dir, 1);
     if(checkForZombieAt(pos)) {
         return true;
@@ -359,16 +360,17 @@ function checkForZombieAt(pos) {
     }
 }
 
-function checkPlayerLook(pos, dir) {
+function checkPlayerLook(posX, posY, dir) {
     // check in one direction only 2 blocks
     // return first hit if building
+    var pos = {x: posX, y: posY};
     var block = checkGridOnDirAndDist(pos, dir, 1);
     var blocks = [block];
     if(block.type == 'building') {
         return blocks;
     }
     block = checkGridOnDirAndDist(pos, dir, 1);
-    this.blocks.push(block);
+    blocks.push(block);
     return blocks;
 }
 
