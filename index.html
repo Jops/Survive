@@ -29,14 +29,23 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
-    $('form').submit(function() {
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
-        return false;
-    });
+    $('form')
+        .submit(function() {
+            socket.emit('chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        })
+        .keydown(function(e){
+            if(e.which === 38)
+                socket.emit('last command');
+        });
     socket.on('chat message', function(msg) {
         $('#messages').append($('<li>').html(msg));
     });
+    socket.on('last command', function(command) {
+        if(command)
+            $('#m').val(command);
+    })
     </script>
 </body>
 
