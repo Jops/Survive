@@ -192,8 +192,7 @@ var players = [];
 var zombies = [];
 
 var Building = function(x, y) {
-    this.position.x = x;
-    this.position.y = y;
+    this.position = {x: x, y: y};
 };
 Building.prototype = {
     position: {x: null, y: null},
@@ -201,8 +200,7 @@ Building.prototype = {
     item: 0
 };
 var Street = function(x, y) {
-    this.position.x = x;
-    this.position.y = y;
+    this.position = {x: x, y: y};
 };
 Street.prototype = {
     position: {x: null, y: null},
