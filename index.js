@@ -244,9 +244,24 @@ function main() {
 
     // create city
     buildCity();
+    debugCity();
 
     // spawn zombies
     spawnZombies();
+}
+
+function debugCity() {
+    var msg = '';
+    for( var y = 0; y < cityGrid.length; y++ ) {
+        msg = '{ ';
+        for( var x = 0; x < cityGrid[y].length; x++ ) {
+            msg += cityGrid[y][x].type.charAt(0);
+            msg += '(x:'+cityGrid[y][x].position.x+' y:'+cityGrid[y][x].position.y+'), ';
+            msg += ' ';
+        }
+        msg += '}';
+        console.log(msg);
+    }
 }
 
 function buildCity() {
